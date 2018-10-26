@@ -1,30 +1,18 @@
-package com.example.dima.imagesorter
+package com.example.dima.imagesorter.ui
+
+import com.example.dima.imagesorter.ui.base.view.MVPView
 
 
-import com.example.dima.imagesorter.di.component.DaggerPresenterInjector
-import com.example.dima.imagesorter.di.component.PresenterInjector
-import com.example.dima.imagesorter.di.module.ContextModule
-
-class SorterPresenter(val view: SorterContract.View) : SorterContract.Presenter {
-
-    private val injector: PresenterInjector = DaggerPresenterInjector
-            .builder()
-            .sorterView(view)
-            .contextModule(ContextModule)
-            .build()
-
-    init {
-        inject()
+class SorterPresenter(val view: SorterContract.View) : SorterContract.Presenter{
+    override fun onAttach(mvpView: MVPView?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    /**
-     * Injects the required dependencies
-     */
-    private fun inject() {
-        when (this) {
-            is SorterPresenter -> injector.inject(this)
-        }
+    override fun getView(): MVPView? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    var viewAttached = false
 
     override var currentFiltering: Int
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
@@ -49,4 +37,14 @@ class SorterPresenter(val view: SorterContract.View) : SorterContract.Presenter 
     override fun sortByType() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun onDetach() {
+        viewAttached = false
+    }
+
+    override fun isMvpViewAttached(): Boolean {
+        return viewAttached
+    }
+
+
 }

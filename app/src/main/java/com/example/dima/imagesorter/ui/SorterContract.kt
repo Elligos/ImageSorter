@@ -1,15 +1,16 @@
-package com.example.dima.imagesorter
+package com.example.dima.imagesorter.ui
 
-import android.content.Context
 import com.example.dima.imagesorter.items.RowItem
+import com.example.dima.imagesorter.ui.base.presenter.MVPPresenter
+import com.example.dima.imagesorter.ui.base.view.MVPView
 
 interface SorterContract {
-    interface View : BaseView<Presenter>{
+    interface View : MVPView {
         fun showImages()
         fun showSortedImages(items : List<RowItem>)
     }
 
-    interface Presenter{
+    interface Presenter : MVPPresenter<MVPView> {
         var currentFiltering : Int
         fun loadImages()
         fun sortByDate()

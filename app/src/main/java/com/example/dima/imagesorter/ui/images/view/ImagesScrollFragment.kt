@@ -1,4 +1,4 @@
-package com.example.dima.imagesorter.ui
+package com.example.dima.imagesorter.ui.images.view
 
 import android.content.Context
 import android.net.Uri
@@ -10,13 +10,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.dima.imagesorter.R
-import com.example.dima.imagesorter.SorterContract
-import com.example.dima.imagesorter.SorterPresenter
 import com.example.dima.imagesorter.items.GroupTitleItem
 import com.example.dima.imagesorter.items.ImageItem
 import com.example.dima.imagesorter.items.RowItem
+import com.example.dima.imagesorter.ui.SorterContract
+import com.example.dima.imagesorter.ui.base.view.BaseFragment
+import com.example.dima.imagesorter.ui.images.presenter.ImagesScrollMVPPresenter
 import com.example.dima.imagesorter.util.getListOfImagesPath
 import com.example.dima.imagesorter.util.log
+import javax.inject.Inject
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -33,13 +35,17 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ImagesScrollFragment : Fragment() , SorterContract.View {
+class ImagesScrollFragment : BaseFragment() , ImagesScrollMVPView, SorterContract.View {
+
+    @Inject
+    internal lateinit var presenter: ImagesScrollMVPPresenter<ImagesScrollMVPView>
+
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
 
-    override fun getContext(): Context {
+    override fun getContext(): Context? {
         if(parentContext == null) throw Exception("parent Context of ImagesScrollFragment is not ready yet")
         return parentContext
     }
@@ -79,8 +85,6 @@ class ImagesScrollFragment : Fragment() , SorterContract.View {
         "ImageScrollFragment created!".log()
     }
 
-
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
@@ -100,9 +104,9 @@ class ImagesScrollFragment : Fragment() , SorterContract.View {
         listener?.onFragmentInteraction(uri)
     }
 
-    override fun onAttach(context: Context) {
+    override fun onAttach(context: Context?) {
         super.onAttach(context)
-        parentContext = context
+        if(context != null) parentContext = context
         "ImageScrollFragment attached!".log()
 //        if (context is OnFragmentInteractionListener) {
 //            listener = context
@@ -117,9 +121,10 @@ class ImagesScrollFragment : Fragment() , SorterContract.View {
 //        listener = null
     }
 
-    override var presenter: SorterContract.Presenter
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-        set(value) {}
+    override fun showMessage(message: String) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 
     override fun showImages() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -167,4 +172,10 @@ class ImagesScrollFragment : Fragment() , SorterContract.View {
 
         }
     }
+
+    override fun setUp() {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+//    override fun setUp() = navBackBtn.setOnClickListener { getBaseActivity()?.onFragmentDetached(TAG) }
 }

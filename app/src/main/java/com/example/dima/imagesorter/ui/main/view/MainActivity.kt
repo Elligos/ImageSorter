@@ -1,20 +1,31 @@
-package com.example.dima.imagesorter.ui
+package com.example.dima.imagesorter.ui.main.view
 
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
+import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import com.example.dima.imagesorter.R
+import com.example.dima.imagesorter.ui.images.view.ImagesScrollFragment
+import com.example.dima.imagesorter.ui.base.view.BaseActivity
+import com.example.dima.imagesorter.ui.main.presenter.MainMVPPresenter
 import com.example.dima.imagesorter.util.log
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.support.HasSupportFragmentInjector
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import javax.inject.Inject
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : BaseActivity(), MainMVPView, NavigationView.OnNavigationItemSelectedListener, HasSupportFragmentInjector {
+
+    @Inject
+    internal lateinit var presenter: MainMVPPresenter<MainMVPView>
+    @Inject
+    internal lateinit var fragmentDispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,8 +101,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    //FRAGMENT
-    fun createFragment(): android.support.v4.app.Fragment? {
-        return ImagesScrollFragment.newInstance("a","b")
+    override fun showMessage(message: String) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    //FRAGMENT
+    override fun supportFragmentInjector() = fragmentDispatchingAndroidInjector
+
+    fun createFragment(): android.support.v4.app.Fragment? {
+        return ImagesScrollFragment.newInstance("a", "b")
+    }
+
+    override fun onFragmentAttached() {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onFragmentDetached(tag: String) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }

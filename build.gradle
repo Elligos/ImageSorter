@@ -25,3 +25,14 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext{
+    // Sdk and tools
+    minSdkVersion = 21
+    targetSdkVersion = 27
+    compileSdkVersion = 27
+//    buildToolsVersion = '26.0.2'
+
+    // App dependencies
+    dagger2Version = '2.11'
+}
