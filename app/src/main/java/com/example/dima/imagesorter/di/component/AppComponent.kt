@@ -24,4 +24,5 @@ interface AppComponent {
     }
 
     fun inject(app: MvpApp)
+//    fun inject(provider: ImageProvider)
 }

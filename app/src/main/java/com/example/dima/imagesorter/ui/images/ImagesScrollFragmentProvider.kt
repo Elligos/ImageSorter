@@ -6,7 +6,7 @@ import dagger.android.ContributesAndroidInjector
 
 @Module
 internal abstract class ImagesScrollFragmentProvider {
-
+    //this annotation generates AndroidInjector for returning type
     @ContributesAndroidInjector(modules = [ImagesScrollFragmentModule::class])
     internal abstract fun provideImagesScrollFragmentFactory(): ImagesScrollFragment
 }

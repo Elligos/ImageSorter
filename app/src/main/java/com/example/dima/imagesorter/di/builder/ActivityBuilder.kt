@@ -15,4 +15,6 @@ abstract class ActivityBuilder {
     @ContributesAndroidInjector(modules = [(MainActivityModule::class),(ImagesScrollFragmentProvider::class)])
     abstract fun bindMainActivity(): MainActivity
 
+
+
 }

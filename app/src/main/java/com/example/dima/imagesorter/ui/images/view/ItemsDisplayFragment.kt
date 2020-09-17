@@ -4,18 +4,21 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.GridLayoutManager.SpanSizeLookup
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.dima.imagesorter.R
+import com.example.dima.imagesorter.items.DirectoryItem
 import com.example.dima.imagesorter.items.GroupTitleItem
 import com.example.dima.imagesorter.items.ImageItem
 import com.example.dima.imagesorter.items.RowItem
+import com.example.dima.imagesorter.providers.ImagePathfinder
 import com.example.dima.imagesorter.ui.SorterContract
 import com.example.dima.imagesorter.ui.base.view.BaseFragment
-import com.example.dima.imagesorter.ui.images.presenter.ImagesScrollMVPPresenter
+import com.example.dima.imagesorter.ui.images.presenter.ItemsDisplayMVPPresenter
 import com.example.dima.imagesorter.util.getListOfImagesPath
 import com.example.dima.imagesorter.util.log
 import javax.inject.Inject
@@ -35,14 +38,10 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ImagesScrollFragment : BaseFragment() , ImagesScrollMVPView, SorterContract.View {
+class ImagesScrollFragment : BaseFragment() , ItemsDisplayMVPView, ItemsRecyclerViewAdapter.Callback, SorterContract.View {
 
     @Inject
-    internal lateinit var presenter: ImagesScrollMVPPresenter<ImagesScrollMVPView>
-
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    internal lateinit var presenter: ItemsDisplayMVPPresenter<ItemsDisplayMVPView>
 
 
     override fun getContext(): Context? {
@@ -56,19 +55,35 @@ class ImagesScrollFragment : BaseFragment() , ImagesScrollMVPView, SorterContrac
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
+
+        items = presenter.getItems()
+        return
         val item1 = GroupTitleItem(
-                title = "String 1"
+                "String 1"
         )
         val item2 = GroupTitleItem(
-                title = "String 2"
+                "String 2"
+        )
+        val item3 = DirectoryItem(
+                "",
+                "Directory"
         )
         items.add(item1)
         items.add(item2)
+        items.add(item3)
+        items.add(item2)
+        items.add(item3)
+        items.add(item3)
+        items.add(item3)
+        items.add(item3)
+        items.add(item3)
+        items.add(item2)
         val imagesPath = getListOfImagesPath(parentContext)
+
+//        getListOfImageBuckets(parentContext)
+        ImagePathfinder.getImageFoldersFromExternal(parentContext)
+        ImagePathfinder.getImageFolderPathsFromExternal(parentContext)
 //        for(imagePath in imagesPath){
 //            val item = GroupTitleItem(
 //                    title = imagePath
@@ -92,8 +107,18 @@ class ImagesScrollFragment : BaseFragment() , ImagesScrollMVPView, SorterContrac
         val itemsRecyclerView = root.findViewById<RecyclerView>(R.id.items_recycler_view)
 //        items_recycler_view?.layoutManager = LinearLayoutManager(parentContext)
 //        items_recycler_view?.adapter = ItemsRecyclerViewAdapter(items, parentContext)
-        itemsRecyclerView?.layoutManager = LinearLayoutManager(parentContext)
-        itemsRecyclerView?.adapter = ItemsRecyclerViewAdapter(items)
+        val manager = GridLayoutManager(parentContext, 3)
+        itemsRecyclerView?.layoutManager = manager//GridLayoutManager(parentContext, 3)//LinearLayoutManager(parentContext)
+        val adapter = ItemsRecyclerViewAdapter(items)
+        itemsRecyclerView?.adapter = adapter//ItemsRecyclerViewAdapter(items)
+        adapter.setCallback(this)
+
+        manager.spanSizeLookup = object : SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                //return if (adapter.isHeader(position)) manager.spanCount else 1
+                return if(adapter.getItemViewType(position) == 2)  manager.spanCount else 1
+            }
+        }
 
         "ImageScrollFragment view created!".log()
         return root
@@ -151,30 +176,20 @@ class ImagesScrollFragment : BaseFragment() , ImagesScrollMVPView, SorterContrac
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ImagesScrollFragment.
-         */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) : ImagesScrollFragment {
+        fun newInstance() : ImagesScrollFragment {
             "ImageScrollFragment new instance created!".log()
-            return ImagesScrollFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-
+            return ImagesScrollFragment()
         }
     }
 
     override fun setUp() {
 //        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onItemClick(item: RowItem){
+        presenter.onItemClick(item)
     }
 
 //    override fun setUp() = navBackBtn.setOnClickListener { getBaseActivity()?.onFragmentDetached(TAG) }

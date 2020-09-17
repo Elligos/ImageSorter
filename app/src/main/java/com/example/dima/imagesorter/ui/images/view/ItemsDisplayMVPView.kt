@@ -2,5 +2,5 @@ package com.example.dima.imagesorter.ui.images.view
 
 import com.example.dima.imagesorter.ui.base.view.MVPView
 
-interface ImagesScrollMVPView : MVPView {
+interface ItemsDisplayMVPView : MVPView {
 }

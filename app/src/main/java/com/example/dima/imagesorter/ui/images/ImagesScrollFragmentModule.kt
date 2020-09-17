@@ -1,8 +1,8 @@
 package com.example.dima.imagesorter.ui.images
 
-import com.example.dima.imagesorter.ui.images.presenter.ImagesScrollMVPPresenter
-import com.example.dima.imagesorter.ui.images.presenter.ImagesScrollPresenter
-import com.example.dima.imagesorter.ui.images.view.ImagesScrollMVPView
+import com.example.dima.imagesorter.ui.images.presenter.ItemsDisplayMVPPresenter
+import com.example.dima.imagesorter.ui.images.presenter.ItemsDisplayPresenter
+import com.example.dima.imagesorter.ui.images.view.ItemsDisplayMVPView
 import dagger.Module
 import dagger.Provides
 
@@ -10,8 +10,8 @@ import dagger.Provides
 class ImagesScrollFragmentModule {
 
     @Provides
-    internal  fun provideImagesScrollPresenter(presenter : ImagesScrollPresenter<ImagesScrollMVPView>)
-            : ImagesScrollMVPPresenter<ImagesScrollMVPView> = presenter
+    internal  fun provideImagesScrollPresenter(presenter : ItemsDisplayPresenter<ItemsDisplayMVPView>)
+            : ItemsDisplayMVPPresenter<ItemsDisplayMVPView> = presenter
 
 
 }
