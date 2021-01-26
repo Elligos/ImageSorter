@@ -1,6 +1,8 @@
 package com.example.dima.imagesorter.ui.images.view
 
+import android.R.attr.path
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -56,14 +58,14 @@ class ItemsRecyclerViewAdapter(private val itemList: ArrayList<RowItem>?) : Recy
     }
 
     override fun getItemCount(): Int {
-//        if(itemList == null) return 0;
-//        return itemList.size
         return itemList?.size ?: 0
     }
 
     fun setData(newItems: ArrayList<RowItem>?)
     {
+        "setData() call".log()
         if (itemList == null) return
+        "New data set used!".log()
         itemList.clear()
         newItems?.let { itemList.addAll(it) }
         notifyDataSetChanged()
@@ -87,8 +89,6 @@ class ItemsRecyclerViewAdapter(private val itemList: ArrayList<RowItem>?) : Recy
     }
 
     override fun getItemViewType(position: Int): Int {
-//        if(itemList.get(position).getItemType() == RowItem.RowItemType.IMAGE_ITEM) return 1
-//        return 2
         if(itemList==null) return 2
         val type = itemList[position].getItemType()
         return when(type){
@@ -96,6 +96,12 @@ class ItemsRecyclerViewAdapter(private val itemList: ArrayList<RowItem>?) : Recy
             RowItem.RowItemType.GROUP_TITLE_ITEM -> 2
             RowItem.RowItemType.DIRECTORY_ITEM -> 3
         }
+    }
+
+    fun isGroupTitleItem(position: Int): Boolean {
+        if(itemList==null) return false
+        val type = itemList[position].getItemType()
+        return type == RowItem.RowItemType.GROUP_TITLE_ITEM
     }
 }
 
@@ -106,25 +112,43 @@ class ViewHolderImage (view: View) : RecyclerView.ViewHolder(view) {
     fun bindItems(imageItem: ImageItem) {
         if(imageContainer == null) throw Exception("Image container is null!")
         if(context == null) throw Exception("Context in bindItem for image is null!")
+        if(imageItem.path == null) throw Exception("Image path is null!")
+
+
+//        if (isImageCorrupted(imageItem.path)) {
+//            imageContainer.setImageResource(R.drawable.temp_image)
+//            "ViewHolderImage bound with temp_image!".log()
+//            return
+//        }
 
         val file = File(imageItem.path)
-
-
-
-       Picasso.get().load(file).resize(480, 480).centerCrop().into(imageContainer)
-
-//        Glide.with(context).load(images.get(position))
-//                .placeholder(R.drawable.ic_launcher).centerCrop()
-//                .into(picturesView)
-//        var tmpImage = context.getResources().getDrawable(R.drawable.temp_image)
-//        imageContainer.setImageDrawable(tmpImage)
+        Picasso.get().
+            load(file).
+            error(R.drawable.temp_image).
+            resize(480, 480).
+            centerCrop().
+            into(imageContainer)
 
         itemView.setOnClickListener(object : View.OnClickListener {
             override fun onClick(p0: View?) {
                 //TODO: show fullsize image
             }
         })
-        "ViewHolderImage with height = ${imageContainer.height}, width = ${imageContainer.width} binded!".log()
+        ("ViewHolderImage with height = ${imageContainer.height}, " +
+                "width = ${imageContainer.width} bound!").log()
+    }
+
+    private fun isImageCorrupted(path : String) : Boolean{
+        //If inJustDecodeBounds set to true, the decoder will return null (no bitmap), but the out...
+        // fields will still be set, allowing the caller to query the bitmap without having to
+        // allocate the memory for its pixels
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeFile(path, options)
+        if (options.outWidth == -1 || options.outHeight == -1) {
+            return true
+        }
+        return false
     }
 }
 
@@ -151,36 +175,6 @@ class ViewHolderDirectory (view: View) : RecyclerView.ViewHolder(view) {
         if (context == null) throw Exception("Context in bindItem for image is null!")
 
 
-//        Glide.with(context) .asBitmap() .load(R.drawable.ic_folder_black_24dp) .into(imageContainer)
-//        var directoryImage = with(context) { resources.getDrawable(R.drawable.ic_folder_black_24dp) }
-//        imageContainer.setImageDrawable(directoryImage)
-
-
-
-
-//        Picasso.get()
-//                .load(R.drawable.ic_folder_brown_100dp)
-//                .placeholder(R.drawable.ic_folder_brown_100dp)
-//                //.error(R.drawable.ic_menu_camera)
-//                .resize(480, 360)
-//                .centerInside()
-//                .transform( CropTransformation(240,320,  CropTransformation.GravityHorizontal.CENTER, CropTransformation.GravityVertical.BOTTOM))
-//                //.centerCrop()
-//                .into(imageContainer)
-        /*
-        Picasso.get()
-                .load(R.drawable.ic_folder_brown_100dp)
-                //.placeholder(R.drawable.ic_folder_brown_100dp)
-                //.error(R.drawable.ic_menu_camera)
-                //.resize(480, 360)
-//                .centerInside()
-                //.transform( CropTransformation(0.1f, 0.1f,  CropTransformation.GravityHorizontal.CENTER, CropTransformation.GravityVertical.CENTER))
-                //.centerCrop()
-                //.resize(480, 360)
-                .placeholder(R.drawable.ic_icons8_folder_light_brown_96dp)
-                .into(imageContainer)
-
-         */
         imageContainer.setImageResource(R.drawable.ic_icons8_folder_light_brown_96dp)
         nameContainer?.let {
             it.text = directoryItem.directoryName
@@ -190,6 +184,7 @@ class ViewHolderDirectory (view: View) : RecyclerView.ViewHolder(view) {
 //                //TODO: show fullsize image
 //            }
 //        })
-        "ViewHolderDirectory with height = ${imageContainer.height}, width = ${imageContainer.width} binded!".log()
+        ("ViewHolderDirectory with height = ${imageContainer.height}, " +
+                "width = ${imageContainer.width} binded!").log()
     }
 }

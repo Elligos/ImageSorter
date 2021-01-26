@@ -7,7 +7,7 @@ import dagger.Module
 import dagger.Provides
 
 @Module
-class ImagesScrollFragmentModule {
+class ItemsDisplayFragmentModule {
 
     @Provides
     internal  fun provideImagesScrollPresenter(presenter : ItemsDisplayPresenter<ItemsDisplayMVPView>)

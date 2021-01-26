@@ -9,7 +9,7 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.view.Menu
 import android.view.MenuItem
 import com.example.dima.imagesorter.R
-import com.example.dima.imagesorter.ui.images.view.ImagesScrollFragment
+import com.example.dima.imagesorter.ui.images.view.ItemsDisplayFragment
 import com.example.dima.imagesorter.ui.groups.view.GroupPickerFragment
 import com.example.dima.imagesorter.ui.base.view.BaseActivity
 import com.example.dima.imagesorter.ui.main.presenter.MainMVPPresenter
@@ -60,7 +60,7 @@ class MainActivity : BaseActivity(),
         }
         //supportFragmentManager.beginTransaction().add(R.id.fragment_container, fragment).commit()
 
-        //Set a listener that will be notified when a menu item from standart navigation menu
+        //Set a listener that will be notified when a menu item from standard navigation menu
         //is selected
         nav_view.setNavigationItemSelectedListener(this)
         "MainActivity created!".log()
@@ -129,8 +129,8 @@ class MainActivity : BaseActivity(),
     //FRAGMENT
     override fun supportFragmentInjector() = fragmentDispatchingAndroidInjector
 
-    fun createFragment(): Fragment? {
-        return ImagesScrollFragment.newInstance()
+    private fun createFragment(): Fragment? {
+        return ItemsDisplayFragment.newInstance()
     }
 
     override fun onFragmentAttached() {
