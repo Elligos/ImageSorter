@@ -109,6 +109,7 @@ class ViewHolderImage (view: View) : RecyclerView.ViewHolder(view) {
     private val imageContainer: ImageView? = view.item_image
     private val context: Context? = view.context
 
+    //TODO: try to use COIL instead of Picasso to solve OOM (OutOfMemory error) problem
     fun bindItems(imageItem: ImageItem) {
         if(imageContainer == null) throw Exception("Image container is null!")
         if(context == null) throw Exception("Context in bindItem for image is null!")

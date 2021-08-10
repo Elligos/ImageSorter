@@ -112,9 +112,19 @@ class MainActivity : BaseActivity(),
 
             }
             R.id.nav_groups -> {
-                var manager = supportFragmentManager
-                var dialog = GroupPickerFragment()
+                val manager = supportFragmentManager
+//                val dialog = GroupPickerFragment.newInstance()
+//                dialog.show(manager, DIALOG_GROUP)
+                val transaction = manager.beginTransaction()
+                val prevFragment   = manager.findFragmentByTag(DIALOG_GROUP)
+                if (prevFragment != null) {
+                    transaction.remove(prevFragment)
+                    "Old instance of GroupPickerFragment deleted!".log()
+                }
+                transaction.addToBackStack(null)
+                val dialog = GroupPickerFragment.newInstance()
                 dialog.show(manager, DIALOG_GROUP)
+
             }
         }
 

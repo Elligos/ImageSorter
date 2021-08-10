@@ -36,7 +36,7 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
     private var currentDirectoryPath = ""
 
 
-    private fun selector(folderPath : String) : String = pathfinder.getFolderName(folderPath)
+    private fun selector(folderPath : String) : String = pathfinder.getFileName(folderPath)
 
     override fun updateInitFolderPaths(){
         initFolderPaths = pathfinder.getImageFolderPathsFromExternal()
@@ -53,7 +53,6 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
     override fun getInitItems(): ArrayList<RowItem> {
         val items = ArrayList<RowItem>()
 
- //       val folderPaths = pathfinder.getImageFolderPathsFromExternal()
         updateInitFolderPaths()
         val folderPaths = initFolderPaths
 
@@ -61,66 +60,15 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
         for(folderPath in folderPaths){
             val item = DirectoryItem(
                     path = folderPath,
-                    directoryName = pathfinder.getFolderName(folderPath)
+                    directoryName = pathfinder.getFileName(folderPath)
             )
             items.add(item)
         }
         return items
 
-//        val item1 = GroupTitleItem(
-//                "2020 June"
-//        )
-//        val item2 = GroupTitleItem(
-//                "WhatsUp"
-//        )
-//        val item3 = DirectoryItem(
-//                "",
-//                "Directory"
-//        )
-//        items.add(item1)
-//        items.add(item2)
-//        items.add(item3)
-//        items.add(item2)
-//        items.add(item3)
-//        items.add(item3)
-//        items.add(item3)
-//        items.add(item3)
-//        items.add(item3)
-//        items.add(item2)
-////        val imagesPath = getListOfImagesPath(parentContext)
-//        val imagesPath = pathfinder.getImagePathsFromExternal()
-//
-////        getListOfImageBuckets(parentContext)
-////        ImagePathfinder.getImageFoldersFromExternal(parentContext)
-////        ImagePathfinder.getImageFolderPathsFromExternal(parentContext)
-//        pathfinder.getImageFoldersFromExternal()
-//        var folderPaths = pathfinder.getImageFolderPathsFromExternal()
-//        for(folder in folderPaths){
-//            pathfinder.getImagePathsFromFolder(folder)
-//        }
-////        for(imagePath in imagesPath){
-////            val item = GroupTitleItem(
-////                    title = imagePath
-////            )
-////            items.add(item)
-////        }
-//        for(imagePath in imagesPath){
-//            val item = ImageItem(
-//                    info = imagePath,
-//                    path = imagePath
-//            )
-//            items.add(item)
-//        }
-//
-//        return items
     }
 
     override fun onItemClick(item : RowItem) {
-//        when(item.getItemType()){
-//            RowItem.RowItemType.IMAGE_ITEM -> "Image item pressed!".log()
-//            RowItem.RowItemType.GROUP_TITLE_ITEM -> "Title item pressed!".log()
-//            RowItem.RowItemType.DIRECTORY_ITEM -> "Directory item pressed!".log()
-//        }
         when(item){
             is ImageItem -> onItemClick(item)
             is GroupTitleItem -> onTitleClick(item)
@@ -139,16 +87,19 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
         for(folderPath in folderPaths){
             val directoryItem = DirectoryItem(
                     path = folderPath,
-                    directoryName = pathfinder.getFolderName(folderPath)
+                    directoryName = pathfinder.getFileName(folderPath)
             )
             items.add(directoryItem)
         }
         for(imagePath in imagePaths){
             val imageItem = ImageItem(
-                    info = pathfinder.getFolderName(imagePath),
-                    path = imagePath
+                    info = pathfinder.getFileName(imagePath),
+                    path = imagePath,
+                    size = pathfinder.getSize(imagePath),
+                    date = pathfinder.getCreationDate(imagePath)
             )
             items.add(imageItem)
+            "Image  ${imageItem.info} with: size = ${imageItem.size}, date = ${imageItem.date}  ready!".log()
         }
         setCurrentFolderPath(item.path)
         "Images from directory ${item.directoryName} ready!".log()
@@ -185,10 +136,10 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
             returnToInitDirectories()
         }
         else{
-            var parentDirectoryPath = ImagePathfinder.getParentDirectoryPath(currentDirectoryPath)
+            var parentDirectoryPath = pathfinder.getParentDirectoryPath(currentDirectoryPath)
             val item = DirectoryItem(
                     path = parentDirectoryPath,
-                    directoryName = pathfinder.getFolderName(parentDirectoryPath)
+                    directoryName = pathfinder.getFileName(parentDirectoryPath)
             )
             onDirectoryClick(item)
         }

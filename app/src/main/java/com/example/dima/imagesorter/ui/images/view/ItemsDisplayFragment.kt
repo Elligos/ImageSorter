@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.dima.imagesorter.R
 import com.example.dima.imagesorter.items.RowItem
-import com.example.dima.imagesorter.ui.SorterContract
 import com.example.dima.imagesorter.ui.base.view.BaseFragment
 import com.example.dima.imagesorter.ui.images.presenter.ItemsDisplayMVPPresenter
 import com.example.dima.imagesorter.util.log
@@ -18,8 +17,8 @@ import kotlinx.android.synthetic.main.items_recycler_view.*
 import javax.inject.Inject
 
 
-
-class ItemsDisplayFragment : BaseFragment() , ItemsDisplayMVPView, ItemsRecyclerViewAdapter.Callback, SorterContract.View {
+//TODO: resolve memory leakage (critical)!
+class ItemsDisplayFragment : BaseFragment() , ItemsDisplayMVPView, ItemsRecyclerViewAdapter.Callback{
 
     companion object {
         @JvmStatic
@@ -101,17 +100,6 @@ class ItemsDisplayFragment : BaseFragment() , ItemsDisplayMVPView, ItemsRecycler
     override fun showMessage(message: String) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
-
-    override fun showImages() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun showSortedImages(items: List<RowItem>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-
 
 
     override fun setUp() {

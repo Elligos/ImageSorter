@@ -3,12 +3,18 @@ package com.example.dima.imagesorter.providers
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
+import kotlin.math.abs
 
 class ImagePathfinder{
 
@@ -18,71 +24,46 @@ class ImagePathfinder{
             parentContext = context
         }
 
-    fun getImageFoldersFromExternal() : ArrayList<String>{
-        val cursor: Cursor?
-        val columnIndexData: Int
-        val folders = ArrayList<String>()
-        var folder: String?
-        val EXTERNAL_CONTENT_URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val BUCKET_DISPLAY_NAME = MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
-        //select column with image containers name
-        val projection = arrayOf(BUCKET_DISPLAY_NAME)
-        //get cursor
-        cursor = parentContext.
-                contentResolver.
-                query(EXTERNAL_CONTENT_URI,
-                        projection,
-                        null,
-                        null,
-                        null)
-        //if cursor is empty, return empty list
-        if(!cursor.moveToFirst()) {
-            cursor.close()
-            return folders
-        }
-        columnIndexData = cursor.getColumnIndexOrThrow(BUCKET_DISPLAY_NAME)
-        while (cursor.moveToNext()) {
-            folder = cursor.getString(columnIndexData)
-            folders.add(folder)
-        }
-        cursor.close()
-        //delete dublicates and sort
-        removeDuplicates(folders)
-        folders.sort()
-        for(directory in folders) {
-            Log.i("ListingImageDirectories", " bucket=$directory")
-        }
-        return folders
-    }
+
 
     fun getImageFolderPathsFromExternal() : ArrayList<String>{
-        val cursor: Cursor?
-        val columnIndex: Int
-        val folderPaths = ArrayList<String>()
-        var imagePath: String?
-        var folderPath: String?
-        val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val IMAGE_PATH = MediaStore.MediaColumns.DATA
-        //select columns we need
-        val projection = arrayOf(IMAGE_PATH)
+//        val cursor: Cursor?
+//        val columnIndex: Int
+//        val folderPaths = ArrayList<String>()
+//        var imagePath: String?
+//        var folderPath: String?
+//        val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+//        val IMAGE_PATH = MediaStore.MediaColumns.DATA
+//
+//        val projection = arrayOf(IMAGE_PATH)//select columns we need
+//
+//        cursor = parentContext.
+//                contentResolver.
+//                query(URI, projection, null, null, null)
+//        //if cursor is empty, return empty list
+//        if(!cursor.moveToFirst()) {
+//            cursor.close()
+//            return folderPaths
+//        }
+//        columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
+//        while (cursor.moveToNext()) {
+//            imagePath = cursor.getString(columnIndex)
+//            folderPath = File(imagePath).parent//remove image file name from path
+//            folderPaths.add(folderPath)//add only directory path to list
+//        }
+//        cursor.close()
 
-        cursor = parentContext.
-                contentResolver.
-                query(URI, projection, null, null, null)
-        //if cursor is empty, return empty list
-        if(!cursor.moveToFirst()) {
-            cursor.close()
-            return folderPaths
-        }
-        columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
-        while (cursor.moveToNext()) {
-            imagePath = cursor.getString(columnIndex)
-            folderPath = File(imagePath).parent//remove image file name from path
+        val imagePaths = getImagePathsFromExternal()
+        val folderPaths = ArrayList<String>()
+        var folderPath: String?
+
+        for(path in imagePaths){
+            folderPath = File(path).parent//remove image file name from path
             folderPaths.add(folderPath)//add only directory path to list
         }
-        cursor.close()
+
         removeDuplicates(folderPaths)
-        removeSubdirectories(folderPaths)
+        removeSubdirectories(folderPaths)//leave only root image directories
         folderPaths.sort()
         for(path in folderPaths) {
             Log.i("ListingImages", " bucket=$path")
@@ -173,169 +154,99 @@ class ImagePathfinder{
         return isImage
     }
 
-    fun getFolderName(absolutePath : String) : String{
+    fun getFileName(absolutePath : String) : String{
         return absolutePath.substringAfterLast("/")
     }
 
-        companion object{
-            fun getImageFoldersFromExternal(parentContext : Context) : ArrayList<String>{
-                val cursor: Cursor?
-                val columnIndexData: Int
-                val folders = ArrayList<String>()
-                var folder: String?
-                val EXTERNAL_CONTENT_URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                val BUCKET_DISPLAY_NAME = MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME
-                //select column with image containers name
-                val projection = arrayOf(BUCKET_DISPLAY_NAME)
-                //get cursor
-                cursor = parentContext.
-                         contentResolver.
-                         query(EXTERNAL_CONTENT_URI,
-                                 projection,
-                                 null,
-                                 null,
-                                 null)
-                //if cursor is empty, return empty list
-                if(!cursor.moveToFirst()) {
-                    cursor.close()
-                    return folders
-                }
-                columnIndexData = cursor.getColumnIndexOrThrow(BUCKET_DISPLAY_NAME)
-                while (cursor.moveToNext()) {
-                    folder = cursor.getString(columnIndexData)
-                    folders.add(folder)
-                }
-                cursor.close()
-                //delete dublicates and sort
-                removeDuplicates(folders)
-                folders.sort()
-                for(directory in folders) {
-                    Log.i("ListingImageDirectories", " bucket=$directory")
-                }
-                return folders
-            }
+    fun getCreationDate(absolutePath: String) : Date{
 
-            fun getImageFolderPathsFromExternal(parentContext : Context) : ArrayList<String>{
-                val cursor: Cursor?
-                val columnIndex: Int
-                val folderPaths = ArrayList<String>()
-                var imagePath: String?
-                var folderPath: String?
-                val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                val IMAGE_PATH = MediaStore.MediaColumns.DATA
-                //select columns we need
-                val projection = arrayOf(IMAGE_PATH)
+        return try {
+            getCreationDateUnsafe(absolutePath)
+        }
+        catch (e : Exception){
+            Date(0)
+        }
+    }
 
-                cursor = parentContext.
-                        contentResolver.
-                        query(URI, projection, null, null, null)
-                //if cursor is empty, return empty list
-                if(!cursor.moveToFirst()) {
-                    cursor.close()
-                    return folderPaths
-                }
-                columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
-                while (cursor.moveToNext()) {
-                    imagePath = cursor.getString(columnIndex)
-                    folderPath = File(imagePath).parent//remove image file name from path
-                    folderPaths.add(folderPath)//add only directory path to list
-                }
-                cursor.close()
-                removeDuplicates(folderPaths)
-                folderPaths.sort()
-                for(path in folderPaths) {
-                    Log.i("ListingImages", " bucket=$path")
-                }
-                return folderPaths
-            }
+    private fun getCreationDateUnsafe(absolutePath: String) : Date{
 
-            fun getImagePathsFromExternal(parentContext : Context) : ArrayList<String>{
-                val cursor: Cursor?
-                val columnIndex: Int
-                val images = ArrayList<String>()
-                var imagePath: String?
-                val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                val IMAGE_PATH = MediaStore.MediaColumns.DATA
-                //select columns we need
-                val projection = arrayOf(IMAGE_PATH)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val path: Path =  Paths.get(absolutePath)
+            val attr = Files.readAttributes(path, BasicFileAttributes::class.java)
+            //attr.creationTime().toString()
+            Date(attr.creationTime().toMillis())
+        } else {
+            val file = File(absolutePath)
+            Date(file.lastModified())
+        }
+    }
 
-                cursor = parentContext.
-                        contentResolver.
-                        query(URI, projection, null, null, null)
-                //if cursor is empty, return empty list
-                if(!cursor.moveToFirst()) {
-                    cursor.close()
-                    return images
-                }
-                columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
-                while (cursor.moveToNext()) {
-                    imagePath = cursor.getString(columnIndex)
-                    images.add(imagePath)//add image path to list
-                }
-                cursor.close()
-                for(path in images) {
-                    Log.i("ListingImages", " bucket=$path")
-                }
-                return images
-            }
+    fun getSize(absolutePath: String) : Long{
 
-            private fun removeDuplicates(list : ArrayList<String>)
-            {
-                var set = HashSet(list)
-                list.clear()
-                list.addAll(set)
-            }
+        return try{
+            getSizeUnsafe(absolutePath)
+        }
+        catch(e : Exception){
+            0
+        }
+    }
 
-            private fun removeSubdirectories(pathList : ArrayList<String>)
-            {
-                var pathsToDelete = ArrayList<Int>()
 
-                for( i in 0 until pathList.size){
-                    val path = pathList[i]
-                    for(j in 0 until pathList.size){
-                        if(isSubdirectory(subdirectoryPath=pathList[j], path=path)){
-                            Log.i("ListingImages", " Path ${pathList[j]} have root path $path ")
-                            pathsToDelete.add(j)
-                            //pathList.removeAt(j)
-                            //Log.i("ListingImages", " Path ${pathList[j]} removed ")
-                        }
-                    }
-                }
-                pathsToDelete.sortDescending()
-                for(k in pathsToDelete){
-                    Log.i("ListingImages", " Path ${pathList[k]} removed ")
-                    pathList.removeAt(k)
-                }
-            }
+    private fun getSizeUnsafe(absolutePath: String) : Long{
 
-            fun isSubdirectory(subdirectoryPath: String, path: String) : Boolean
-            {
-                if(path == subdirectoryPath) return false
-                if(path.length > subdirectoryPath.length) return false
-                val subpath = subdirectoryPath.substring(0, path.length)
-                Log.i("ListingImages", " Subpath $subpath and path $path ")
-                if(subpath == path) return true
-                return false
-            }
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val path: Path =  Paths.get(absolutePath)
+            val attr = Files.readAttributes(path, BasicFileAttributes::class.java)
+            attr.size()
+        } else {
+            val file = File(absolutePath)
+            file.length()
+        }
+    }
 
-            fun getParentDirectoryPath(currentDirectoryPath: String) : String{
-                return currentDirectoryPath.substringBeforeLast("/", "")
-            }
 
-            private fun findCommonDirPath(paths: List<String>, separator: Char): String {
-                if (paths.isEmpty()) return ""
-                if (paths.size == 1) return paths[0]
-                val splits = paths[0].split(separator)
-                val n = splits.size
-                val paths2 = paths.drop(1)
-                var k = 0
-                var common = ""
-                while (true) {
-                    val prevCommon = common
-                    common += if (k == 0) splits[0] else separator + splits[k]
-                    if (!paths2.all { it.startsWith(common + separator) || it == common } ) return prevCommon
-                    if (++k == n) return common
+
+    private fun removeDuplicates(list : ArrayList<String>)
+    {
+        val set = HashSet(list)
+        list.clear()
+        list.addAll(set)
+    }
+
+    private fun removeSubdirectories(pathList : ArrayList<String>)
+    {
+        var pathsToDelete = ArrayList<Int>()
+
+        for( i in 0 until pathList.size){
+            val path = pathList[i]
+            for(j in 0 until pathList.size){
+                if(isSubdirectory(subdirectoryPath=pathList[j], path=path)){
+                    Log.i("ListingImages", " Path ${pathList[j]} have root path $path ")
+                    pathsToDelete.add(j)
+                    //pathList.removeAt(j)
+                    //Log.i("ListingImages", " Path ${pathList[j]} removed ")
                 }
             }
         }
+        pathsToDelete.sortDescending()
+        for(k in pathsToDelete){
+            Log.i("ListingImages", " Path ${pathList[k]} removed ")
+            pathList.removeAt(k)
+        }
+    }
+
+    private fun isSubdirectory(subdirectoryPath: String, path: String) : Boolean
+    {
+        if(path == subdirectoryPath) return false
+        if(path.length > subdirectoryPath.length) return false
+        val subpath = subdirectoryPath.substring(0, path.length)
+        Log.i("ListingImages", " Subpath $subpath and path $path ")
+        if(subpath == path) return true
+        return false
+    }
+
+    fun getParentDirectoryPath(currentDirectoryPath: String) : String{
+        return currentDirectoryPath.substringBeforeLast("/", "")
+    }
+
 }
