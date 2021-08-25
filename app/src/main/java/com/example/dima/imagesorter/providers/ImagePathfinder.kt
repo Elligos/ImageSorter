@@ -18,46 +18,61 @@ import kotlin.math.abs
 
 class ImagePathfinder{
 
-        var parentContext: Context
+    var parentContext: Context
 
-        constructor(context: Context){
-            parentContext = context
+    constructor(context: Context){
+        parentContext = context
+    }
+
+    private var allImagePaths  = ArrayList<String>()
+
+    fun getCachedImagePaths() : ArrayList<String> = allImagePaths
+
+
+
+    fun updateImagePaths(){
+        allImagePaths.clear()
+
+        val cursor: Cursor?
+        val columnIndex: Int
+        var imagePath: String?
+        val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        val IMAGE_PATH = MediaStore.MediaColumns.DATA
+        val projection = arrayOf(IMAGE_PATH)//select columns we need
+
+        cursor = parentContext.
+                 contentResolver.
+                 query(URI, projection, null, null, null)
+        //if cursor is empty, exit with empty list
+        if(!cursor.moveToFirst()) {
+            cursor.close()
+            return
         }
 
+        //get column index or exit with empty list if column doesn't exist
+        try{
+            columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
+        }
+        catch (e : Exception){
+            cursor.close()
+            return
+        }
 
+        while (cursor.moveToNext()) {
+            imagePath = cursor.getString(columnIndex)
+            allImagePaths.add(imagePath)//add image path to list
+        }
+        cursor.close()
 
-    fun getImageFolderPathsFromExternal() : ArrayList<String>{
-//        val cursor: Cursor?
-//        val columnIndex: Int
-//        val folderPaths = ArrayList<String>()
-//        var imagePath: String?
-//        var folderPath: String?
-//        val URI: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-//        val IMAGE_PATH = MediaStore.MediaColumns.DATA
-//
-//        val projection = arrayOf(IMAGE_PATH)//select columns we need
-//
-//        cursor = parentContext.
-//                contentResolver.
-//                query(URI, projection, null, null, null)
-//        //if cursor is empty, return empty list
-//        if(!cursor.moveToFirst()) {
-//            cursor.close()
-//            return folderPaths
-//        }
-//        columnIndex = cursor.getColumnIndexOrThrow(IMAGE_PATH)
-//        while (cursor.moveToNext()) {
-//            imagePath = cursor.getString(columnIndex)
-//            folderPath = File(imagePath).parent//remove image file name from path
-//            folderPaths.add(folderPath)//add only directory path to list
-//        }
-//        cursor.close()
+        for(path in allImagePaths) Log.i("ListingImages", " bucket=$path")
+    }
 
-        val imagePaths = getImagePathsFromExternal()
+    fun getAppFolderPathsFromImagePaths() : ArrayList<String>{
+
         val folderPaths = ArrayList<String>()
         var folderPath: String?
 
-        for(path in imagePaths){
+        for(path in allImagePaths){
             folderPath = File(path).parent//remove image file name from path
             folderPaths.add(folderPath)//add only directory path to list
         }
@@ -82,8 +97,8 @@ class ImagePathfinder{
         val projection = arrayOf(IMAGE_PATH)
 
         cursor = parentContext.
-                contentResolver.
-                query(URI, projection, null, null, null)
+        contentResolver.
+        query(URI, projection, null, null, null)
         //if cursor is empty, return empty list
         if(!cursor.moveToFirst()) {
             cursor.close()
@@ -100,6 +115,28 @@ class ImagePathfinder{
         }
         return images
     }
+
+    fun getImageRootFolderPathsFromExternal() : ArrayList<String>{
+
+        val imagePaths = getImagePathsFromExternal()
+        val folderPaths = ArrayList<String>()
+        var folderPath: String?
+
+        for(path in imagePaths){
+            folderPath = File(path).parent//remove image file name from path
+            folderPaths.add(folderPath)//add only directory path to list
+        }
+
+        removeDuplicates(folderPaths)
+        removeSubdirectories(folderPaths)//leave only root image directories
+        folderPaths.sort()
+        for(path in folderPaths) {
+            Log.i("ListingImages", " bucket=$path")
+        }
+        return folderPaths
+    }
+
+
 
     fun getImagePathsFromFolder(folderPath: String) : ArrayList<String>
     {
