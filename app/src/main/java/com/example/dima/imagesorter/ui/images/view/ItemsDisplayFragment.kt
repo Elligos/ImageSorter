@@ -43,6 +43,7 @@ class ItemsDisplayFragment : BaseFragment() , ItemsDisplayMVPView, ItemsRecycler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        presenter.init()
         items = presenter.getInitItems()
         "ImageScrollFragment created!".log()
         return

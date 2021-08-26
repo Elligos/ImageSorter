@@ -9,6 +9,7 @@ import com.example.dima.imagesorter.providers.PreferenceHelper
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
+import io.reactivex.disposables.CompositeDisposable
 
 @Module
 class AppModule {
@@ -27,4 +28,7 @@ class AppModule {
     @Provides
     @Singleton
     internal fun providePrefHelper(appPreferenceHelper: AppPreferenceHelper): PreferenceHelper = appPreferenceHelper
+
+    @Provides
+    internal fun provideCompositeDisposable(): CompositeDisposable = CompositeDisposable()
 }

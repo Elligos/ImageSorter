@@ -9,11 +9,15 @@ import com.example.dima.imagesorter.providers.ImagePathfinder
 import com.example.dima.imagesorter.ui.base.presenter.BasePresenter
 import com.example.dima.imagesorter.ui.images.view.ItemsDisplayMVPView
 import com.example.dima.imagesorter.util.log
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 
 //adding an @Inject constructor() makes ItemsDisplayPresenter available to Dagger
-class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): BasePresenter<V>(), ItemsDisplayMVPPresenter<V>{
+class ItemsDisplayPresenter<V : ItemsDisplayMVPView>
+        @Inject constructor(compositeDisposable: CompositeDisposable):
+        BasePresenter<V>(compositeDisposable = compositeDisposable),
+        ItemsDisplayMVPPresenter<V>{
 
     @Inject lateinit var pathfinder: ImagePathfinder
     @Inject internal lateinit var prefHelper: AppPreferenceHelper
@@ -37,7 +41,7 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
 
     private var initFolderPaths  = ArrayList<String>()
     private var currentDirectoryPath = ""
-    private var currentPolling : Int? = 0//TODO: delete and replace with reactivex approach
+    private var currentPolling : Int? = 0
 
 
     private fun selector(folderPath : String) : String = pathfinder.getFileName(folderPath)
@@ -55,28 +59,20 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
         return currentDirectoryPath
     }
 
-    override fun getInitItems(): ArrayList<RowItem> {
-//        val items = ArrayList<RowItem>()
-//
-//        updateInitFolderPaths()
-//        val folderPaths = initFolderPaths
-//
-//        folderPaths.sortBy { selector(it) }
-//        for(folderPath in folderPaths){
-//            val item = DirectoryItem(
-//                    path = folderPath,
-//                    directoryName = pathfinder.getFileName(folderPath)
-//            )
-//            items.add(item)
-//        }
-//        return items
-
+    override fun init(){
         pathfinder.updateImagePaths()
-      //return getDateRootFolders()
+        compositeDisposable.add(prefHelper.getItemsPooling().subscribe({
+            currentPolling = it
+            "Image  pooling  $it selected through rx in ItemsDisplayPresenter module.".log()
+            returnToInitDirectories()
+            "Return to upper directories through rx  with pooling  $it selected in ItemsDisplayPresenter module.".log()
+        }, {
+            "Image  pooling  $it selection failed through rx in ItemsDisplayPresenter module!".log()
+        }))
+    }
 
-        currentPolling = prefHelper.getItemsPooling()//TODO: delete and replace with reactivex approach
-
-        return when (prefHelper.getItemsPooling()) {
+    override fun getInitItems(): ArrayList<RowItem> {
+        return when (currentPolling) {
             0 -> getAppsRootFolders()
             1 -> getDateRootFolders()
             2 -> getSizeRootFolders()
@@ -118,7 +114,6 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
     }
 
     fun getDateRootFolders() : ArrayList<RowItem> {
-
         var imagePaths = pathfinder.getImagePathsFromExternal()
         val imageItems = getImageItems(imagePaths)
 
@@ -163,26 +158,15 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
     }
 
     override fun onItemClick(item : RowItem) {
-        //TODO: delete and replace with reactivex approach
-        if(currentPolling != prefHelper.getItemsPooling()){
-            currentPolling = prefHelper.getItemsPooling()
-            "Group pooling configuration updated, return to root directories! ".log()
-//            prefHelper.resetItemsPoolingUpdated()
-            returnToInitDirectories()
-            return
-        }
-
         when(item){
             is ImageItem -> onItemClick(item)
             is GroupTitleItem -> onTitleClick(item)
             is DirectoryItem -> onDirectoryClick(item)
         }
-
     }
 
     override fun onDirectoryClick(item : DirectoryItem) {
-
-        when(prefHelper.getItemsPooling())
+        when(currentPolling)
         {
             0 -> onAppDirectoryClick(item)
             1 -> onDateDirectoryClick(item)
@@ -222,19 +206,16 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
     }
 
     fun onDateDirectoryClick(directoryItem : DirectoryItem){
-
         if(isYearDirectoryItem(directoryItem)) onYearDirectoryClick(directoryItem)
         else onMonthDirectoryClick(directoryItem)
     }
 
     fun isYearDirectoryItem(directoryItem: DirectoryItem) : Boolean{
-
         if(directoryItem.path?.substringAfter("/", "no substring") == "no substring") return true
         return false
     }
 
     fun onYearDirectoryClick(directoryItem : DirectoryItem){
-
         if(directoryItem.path == null) return
 
         val allImagePaths = pathfinder.getCachedImagePaths()
@@ -345,17 +326,15 @@ class ItemsDisplayPresenter<V : ItemsDisplayMVPView> @Inject constructor(): Base
         "Title ${item.title} pressed!".log()
     }
 
-    override fun returnToInitDirectories() {
+    override fun returnToInitDirectories(){
         setCurrentFolderPath("")
         val items = getInitItems()
         getView()?.displayItems(items)
         getView()?.hideReturnButton()
     }
 
-    override fun returnToUpperDirectory()
-    {
-        when(prefHelper.getItemsPooling())
-        {
+    override fun returnToUpperDirectory(){
+        when(currentPolling){
             0 -> returnToUpperAppDirectory()
             1 -> returnToUpperDateDirectory()
             2 -> returnToUpperSizeDirectory()

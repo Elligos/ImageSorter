@@ -43,8 +43,10 @@ class GroupPickerFragment : /*DaggerDialogFragment(),*/ DaggerAppCompatDialogFra
         val view = LayoutInflater.from(parentContext).inflate(R.layout.dialog_group_picker, null)
         //val view = parentContext.layoutInflater.inflate(R.layout.dialog_group_picker, null)
         val builder =  AlertDialog.Builder(parentContext)
-        setupSpinner(view)
+        //setupSpinner(view)
         presenter.onAttach(this)
+        presenter.init()
+        setupSpinner(view)
         val title = getCustomTitle()
 
 

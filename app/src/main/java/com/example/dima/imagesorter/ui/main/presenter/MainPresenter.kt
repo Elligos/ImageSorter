@@ -3,10 +3,14 @@ package com.example.dima.imagesorter.ui.main.presenter
 import com.example.dima.imagesorter.ui.base.presenter.BasePresenter
 import com.example.dima.imagesorter.ui.base.view.MVPView
 import com.example.dima.imagesorter.ui.main.view.MainMVPView
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 
-class MainPresenter<mainView : MainMVPView> @Inject internal constructor() : BasePresenter<mainView>(), MainMVPPresenter<mainView>{
+class MainPresenter<mainView : MainMVPView>
+        @Inject internal constructor(compositeDisposable: CompositeDisposable) :
+        BasePresenter<mainView>(compositeDisposable = compositeDisposable),
+        MainMVPPresenter<mainView>{
 
 
     override fun onAttach(mvpView: mainView?) {

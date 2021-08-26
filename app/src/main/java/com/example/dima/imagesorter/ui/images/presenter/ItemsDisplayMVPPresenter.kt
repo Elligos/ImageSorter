@@ -22,4 +22,5 @@ interface ItemsDisplayMVPPresenter<V : ItemsDisplayMVPView> : MVPPresenter<V> {
     fun updateInitFolderPaths()
     fun setCurrentFolderPath(path : String)
     fun getCurrentFolderPath() : String
+    fun init()
 }
