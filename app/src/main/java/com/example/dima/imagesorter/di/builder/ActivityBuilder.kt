@@ -1,5 +1,6 @@
 package com.example.dima.imagesorter.di.builder
 
+import com.example.dima.imagesorter.items.browser.ImageItemsBrowser
 import com.example.dima.imagesorter.ui.groups.GroupPickerFragmentProvider
 import com.example.dima.imagesorter.ui.images.ItemsDisplayFragmentProvider
 import com.example.dima.imagesorter.ui.main.MainActivityModule

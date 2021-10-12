@@ -3,6 +3,8 @@ package com.example.dima.imagesorter.di.module
 import android.app.Application
 import android.content.Context
 import com.example.dima.imagesorter.di.PreferenceInfo
+import com.example.dima.imagesorter.items.browser.ImageItemsBrowser
+import com.example.dima.imagesorter.items.browser.ItemsBrowser
 import com.example.dima.imagesorter.providers.AppPreferenceHelper
 import com.example.dima.imagesorter.providers.ImagePathfinder
 import com.example.dima.imagesorter.providers.PreferenceHelper
@@ -19,7 +21,12 @@ class AppModule {
     internal fun provideContext(application: Application): Context = application
 
     @Provides
-    internal  fun provideImagePathfinder(context: Context): ImagePathfinder = ImagePathfinder(context)
+    internal  fun provideImagePathfinder(context: Context): ImagePathfinder
+            = ImagePathfinder(context)
+
+    @Provides
+    internal fun provideItemsBrowser(pathfinder : ImagePathfinder) : ImageItemsBrowser
+            = ImageItemsBrowser(pathfinder)
 
     @Provides
     @PreferenceInfo
@@ -27,8 +34,11 @@ class AppModule {
 
     @Provides
     @Singleton
-    internal fun providePrefHelper(appPreferenceHelper: AppPreferenceHelper): PreferenceHelper = appPreferenceHelper
+    internal fun providePrefHelper(appPreferenceHelper: AppPreferenceHelper): PreferenceHelper
+            = appPreferenceHelper
 
     @Provides
     internal fun provideCompositeDisposable(): CompositeDisposable = CompositeDisposable()
+
+
 }
