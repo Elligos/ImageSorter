@@ -71,7 +71,6 @@ class ImageItemsBrowser constructor(private val pathfinder: ImagePathfinder): It
         }
     }
 
-    //TODO: rename, for example getUpperLevelItems
     override fun getUpperLevelItems(): ArrayList<RowItem> {
         return when(grouping){
             GROUP_BY_APP -> getAppUpperLevelItems()
